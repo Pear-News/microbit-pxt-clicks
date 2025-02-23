@@ -21,6 +21,9 @@ let lastClickEnd =     [0, 0, 0]
 let lastPressedStart = [0, 0, 0]
 let inLongClick =      [false, false, false]
 
+// Testing function!
+let ab = false
+
 export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
     B = 1,
