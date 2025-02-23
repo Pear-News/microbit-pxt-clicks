@@ -84,7 +84,7 @@ function button(i: number) { // i is the Button Index (1,2)
 loops.everyInterval(singleClickCheckTime, function() {
     let currentTime = control.millis()
     // i is index and AorB  (0-based)
-    for(let i=Button.A-1;i<=Button.B-1;i++) {
+    for(let i=Button.A-1;i<=Button.B-1;i<=Button.AB-1;i++) {
         if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] > doubleClickTime)) {
             lastClickEnd[i] = 0
             doActions(i, SINGLECLICK)
