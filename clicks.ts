@@ -51,7 +51,9 @@ function button(i: number) { // i is the Button Index (1,2,3)
     basic.pause(1)
     if (input.buttonIsPressed(Button.A) && input.buttonIsPressed(Button.B)) {
         let pressed = input.buttonIsPressed(Button.AB)
-        serial.writeLine("AB is pressed (Testing)")
+        serial.writeLine("AB is pressed (Testing, Basic Part)")
+        serial.writeLine("Pressed: ", pressed)
+        serial.writeLine("i: ", i)
     }
     i--;  // Adjust to 0-based AorB and array index.
 
