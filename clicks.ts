@@ -23,19 +23,21 @@ let lastClickEnd =     [0, 0]
 let lastPressedStart = [0, 0]
 let inLongClick =      [false, false]
 
-export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
+export enum AorBorAB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
-    B = 1
+    B = 1,
+    AB = 2
 }
 
 // Array of handlers
 let actions : [[Action]] = [ 
     [null, null, null, null, null],  // A Handlers
-    [null, null, null, null, null]   // B Handlers
+    [null, null, null, null, null],  // B Handlers
+    [null, null, null, null, null]   // AB Handlers
 ];
 
 // Button is AorB (0-based)
-function doActions(button: AorB, kind: number) {
+function doActions(button: AorBorAB, kind: number) {
     // Optional/Null chaining would be nice...
     let handlers = actions.get(button)
     if(handlers) {
@@ -108,24 +110,28 @@ control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_B,
     EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => button(Button.B))
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_B,
     EventBusValue.MICROBIT_BUTTON_EVT_UP, () => button(Button.B))
+control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_AB,
+    EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => button(Button.AB))
+control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_AB,
+    EventBusValue.MICROBIT_BUTTON_EVT_UP, () => button(Button.AB))
 
 //% blockId=onButtonSingleClicked block="on button |%NAME single clicked"
 //% weight=100 
-export function onButtonSingleClicked(button: AorB, body: Action) {
+export function onButtonSingleClicked(button: AorBorAB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(SINGLECLICK, body)
 }
 
 //% blockId=onButtonDoubleClicked block="on button |%NAME double clicked "
 //% weight=75
-export function onButtonDoubleClicked(button: AorB, body: Action) {
+export function onButtonDoubleClicked(button: AorBorAB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(DOUBLECLICK, body)
 }
 
 //% blockId=onButtonHeld block="on button |%NAME held"
 //% weight=50
-export function onButtonHeld(button: AorB, body: Action) {
+export function onButtonHeld(button: AorBorAB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(LONGCLICK, body)
 }
@@ -134,7 +140,7 @@ export function onButtonHeld(button: AorB, body: Action) {
 //% blockId=onButtonDown block="on button |%NAME down "
 //% weight=25 
 //% group="Advanced"
-export function onButtonDown(button: AorB, body: Action) {
+export function onButtonDown(button: AorBorAB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(BUTTONDOWN, body)
 }
@@ -142,7 +148,7 @@ export function onButtonDown(button: AorB, body: Action) {
 //% blockId=onButtonUp block="on button |%NAME up "
 //% weight=10 
 //% group="Advanced"
-export function onButtonUp(button: AorB, body: Action) {
+export function onButtonUp(button: AorBorAB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(BUTTONUP, body)
 }
