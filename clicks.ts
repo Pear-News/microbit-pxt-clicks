@@ -56,32 +56,18 @@ function button(i: number) { // i is the Button Index (1,2,3)
         lastPressedStart[AorB.AB] = currentTime
         // Haven't started a long click yet
         inLongClick[AorB.AB] = false
-    } else if (pressedA || pressedB) {
-        doActions(i, BUTTONDOWN)
-        lastPressedStart[i] = currentTime
-        // Haven't started a long click yet
-        inLongClick[i] = false
     } else {
-        // Release
-        doActions(i, BUTTONUP)
-        const holdTime = currentTime - lastPressedStart[i]
-        if (holdTime < shortClickTime) {
-            if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] < doubleClickTime)) {
-                lastClickEnd[i] = 0 // Click ended
-                doActions(i, DOUBLECLICK)
-            } else {
-                // If we're in a long click, end it
-                if(inLongClick[i] == true) {
-                    inLongClick[i] = false
-                    lastClickEnd[i] = 0
-                } else {
-                    // Otherwise, note the time for short click checks
-                    lastClickEnd[i] = currentTime
-                }
-            }
-        } else {
-            // Intermediate clicks are ignored
-            lastClickEnd[i] = 0
+        if (pressedA) {
+            doActions(AorB.A, BUTTONDOWN)
+            lastPressedStart[AorB.A] = currentTime
+            // Haven't started a long click yet
+            inLongClick[AorB.A] = false
+        }
+        if (pressedB) {
+            doActions(AorB.B, BUTTONDOWN)
+            lastPressedStart[AorB.B] = currentTime
+            // Haven't started a long click yet
+            inLongClick[AorB.B] = false
         }
     }
 }
@@ -105,12 +91,18 @@ loops.everyInterval(singleClickCheckTime, function() {
             inLongClick[AorB.AB] = true
             lastPressedStart[AorB.AB] = currentTime // Prepare for 2nd long click
             doActions(AorB.AB, LONGCLICK)
-        } else if (pressedA || pressedB) {
-            if (holdTime > longClickTime) {
-                lastClickEnd[i] = 0 // Click ended / not a short click
-                inLongClick[i] = true
-                lastPressedStart[i] = currentTime // Prepare for 2nd long click
-                doActions(i, LONGCLICK)
+        } else {
+            if (pressedA && (holdTime > longClickTime)) {
+                lastClickEnd[AorB.A] = 0 // Click ended / not a short click
+                inLongClick[AorB.A] = true
+                lastPressedStart[AorB.A] = currentTime // Prepare for 2nd long click
+                doActions(AorB.A, LONGCLICK)
+            }
+            if (pressedB && (holdTime > longClickTime)) {
+                lastClickEnd[AorB.B] = 0 // Click ended / not a short click
+                inLongClick[AorB.B] = true
+                lastPressedStart[AorB.B] = currentTime // Prepare for 2nd long click
+                doActions(AorB.B, LONGCLICK)
             }
         }
     }
