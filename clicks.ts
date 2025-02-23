@@ -55,6 +55,7 @@ function buttonHandler(i: number) {
     } else {
         abPressed = false
     }
+    serial.write(`abPressed: ${abPressed}`)
 
     i--;  // Adjust to 0-based AorB and array index.
 
