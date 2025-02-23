@@ -51,9 +51,9 @@ function button(i: number) { // i is the Button Index (1,2,3)
     basic.pause(1)
     if (input.buttonIsPressed(Button.A) && input.buttonIsPressed(Button.B)) {
         let pressed = input.buttonIsPressed(Button.AB)
+        let ab = true
         serial.writeLine("AB is pressed (Testing, Basic Part)")
         serial.writeLine("Pressed: " + pressed)
-        i = 3
         serial.writeLine("i: " + i)
     }
     i--;  // Adjust to 0-based AorB and array index.
@@ -70,7 +70,9 @@ function button(i: number) { // i is the Button Index (1,2,3)
         if (holdTime < shortClickTime) {
             if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] < doubleClickTime)) {
                 lastClickEnd[i] = 0 // Click ended
+                if (ab) {i=3}
                 doActions(i, DOUBLECLICK)
+                if (ab) {ab=false}
             } else {
                 // If we're in a long click, end it
                 if(inLongClick[i] == true) {
@@ -94,7 +96,9 @@ loops.everyInterval(singleClickCheckTime, function() {
     for(let i=Button.A-1;i<=Button.AB-1;i++) {
         if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] > doubleClickTime)) {
             lastClickEnd[i] = 0
+            if (ab) {i=3}
             doActions(i, SINGLECLICK)
+            if (ab) {ab = false}
         }
         // Check if we're in a long press
         // Button indices are 1-based (i+1).
@@ -104,7 +108,9 @@ loops.everyInterval(singleClickCheckTime, function() {
             lastClickEnd[i] = 0 // Click ended / not a short click
             inLongClick[i] = true
             lastPressedStart[i] = currentTime // Prepare for 2nd long click
+            if (ab) {i=3}
             doActions(i, LONGCLICK)
+            if (ab) {ab = false}
         }
     }
 })
