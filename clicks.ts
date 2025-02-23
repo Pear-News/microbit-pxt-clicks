@@ -48,8 +48,10 @@ function doActions(button: AorB, kind: number) {
 function button(i: number) { // i is the Button Index (1,2,3)
     let currentTime = control.millis()
     let pressed = input.buttonIsPressed(i)
+    basic.pause(1)
     if (input.buttonIsPressed(Button.A) && input.buttonIsPressed(Button.B)) {
         let pressed = input.buttonIsPressed(Button.AB)
+        serial.writeLine("AB is pressed (Testing)")
     }
     i--;  // Adjust to 0-based AorB and array index.
 
