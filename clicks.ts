@@ -24,7 +24,6 @@ let inLongClick =      [false, false, false]
 export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
     B = 1,
-    //% block="A+B"
     AB = 2
 }
 
@@ -47,10 +46,17 @@ function doActions(button: AorB, kind: number) {
 
 function button(i: number) { // i is the Button Index (1,2,3)
     let currentTime = control.millis()
-    let pressed = input.buttonIsPressed(i)
+    let pressedA = input.buttonIsPressed(Button.A)
+    let pressedB = input.buttonIsPressed(Button.B)
+    let pressedAB = pressedA && pressedB
     i--;  // Adjust to 0-based AorB and array index.
 
-    if(pressed) {
+    if(pressedAB) {
+        doActions(AorB.AB, BUTTONDOWN)
+        lastPressedStart[AorB.AB] = currentTime
+        // Haven't started a long click yet
+        inLongClick[AorB.AB] = false
+    } else if (pressedA || pressedB) {
         doActions(i, BUTTONDOWN)
         lastPressedStart[i] = currentTime
         // Haven't started a long click yet
@@ -90,13 +96,22 @@ loops.everyInterval(singleClickCheckTime, function() {
         }
         // Check if we're in a long press
         // Button indices are 1-based (i+1).
-        let pressed = input.buttonIsPressed(i+1)
+        let pressedA = input.buttonIsPressed(Button.A)
+        let pressedB = input.buttonIsPressed(Button.B)
+        let pressedAB = pressedA && pressedB
         const holdTime = currentTime - lastPressedStart[i]
-        if(pressed && (holdTime > longClickTime) ) {
-            lastClickEnd[i] = 0 // Click ended / not a short click
-            inLongClick[i] = true
-            lastPressedStart[i] = currentTime // Prepare for 2nd long click
-            doActions(i, LONGCLICK)
+        if (pressedAB && (holdTime > longClickTime)) {
+            lastClickEnd[AorB.AB] = 0 // Click ended / not a short click
+            inLongClick[AorB.AB] = true
+            lastPressedStart[AorB.AB] = currentTime // Prepare for 2nd long click
+            doActions(AorB.AB, LONGCLICK)
+        } else if (pressedA || pressedB) {
+            if (holdTime > longClickTime) {
+                lastClickEnd[i] = 0 // Click ended / not a short click
+                inLongClick[i] = true
+                lastPressedStart[i] = currentTime // Prepare for 2nd long click
+                doActions(i, LONGCLICK)
+            }
         }
     }
 })
