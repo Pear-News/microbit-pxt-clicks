@@ -20,6 +20,7 @@ const doubleClickTime = 300
 let lastClickEnd =     [0, 0, 0]
 let lastPressedStart = [0, 0, 0]
 let inLongClick =      [false, false, false]
+let lastButtonPressed = -1
 
 export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
@@ -52,22 +53,54 @@ function button(i: number) { // i is the Button Index (1,2,3)
     i--;  // Adjust to 0-based AorB and array index.
 
     if(pressedAB) {
-        doActions(AorB.AB, BUTTONDOWN)
-        lastPressedStart[AorB.AB] = currentTime
-        // Haven't started a long click yet
-        inLongClick[AorB.AB] = false
+        if(lastButtonPressed != AorB.AB) {
+            doActions(AorB.AB, BUTTONDOWN)
+            lastPressedStart[AorB.AB] = currentTime
+            lastButtonPressed = AorB.AB
+            inLongClick[AorB.AB] = false
+        }
     } else {
         if (pressedA) {
-            doActions(AorB.A, BUTTONDOWN)
-            lastPressedStart[AorB.A] = currentTime
-            // Haven't started a long click yet
-            inLongClick[AorB.A] = false
+            if(lastButtonPressed != AorB.A) {
+                doActions(AorB.A, BUTTONDOWN)
+                lastPressedStart[AorB.A] = currentTime
+                lastButtonPressed = AorB.A
+                inLongClick[AorB.A] = false
+            }
         }
         if (pressedB) {
-            doActions(AorB.B, BUTTONDOWN)
-            lastPressedStart[AorB.B] = currentTime
-            // Haven't started a long click yet
-            inLongClick[AorB.B] = false
+            if(lastButtonPressed != AorB.B) {
+                doActions(AorB.B, BUTTONDOWN)
+                lastPressedStart[AorB.B] = currentTime
+                lastButtonPressed = AorB.B
+                inLongClick[AorB.B] = false
+            }
+        }
+    }
+
+    if (!pressedA && !pressedB) {
+        if(lastButtonPressed != -1) {
+            doActions(lastButtonPressed, BUTTONUP)
+            const holdTime = currentTime - lastPressedStart[lastButtonPressed]
+            if (holdTime < shortClickTime) {
+                if ((lastClickEnd[lastButtonPressed] > 0) && (currentTime - lastClickEnd[lastButtonPressed] < doubleClickTime)) {
+                    lastClickEnd[lastButtonPressed] = 0 // Click ended
+                    doActions(lastButtonPressed, DOUBLECLICK)
+                } else {
+                    // If we're in a long click, end it
+                    if(inLongClick[lastButtonPressed] == true) {
+                        inLongClick[lastButtonPressed] = false
+                        lastClickEnd[lastButtonPressed] = 0
+                    } else {
+                        // Otherwise, note the time for short click checks
+                        lastClickEnd[lastButtonPressed] = currentTime
+                    }
+                }
+            } else {
+                // Intermediate clicks are ignored
+                lastClickEnd[lastButtonPressed] = 0
+            }
+            lastButtonPressed = -1
         }
     }
 }
