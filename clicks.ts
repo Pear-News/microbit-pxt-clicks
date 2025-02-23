@@ -70,6 +70,7 @@ function buttonHandler(i: number) {
             if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] < doubleClickTime)) {
                 lastClickEnd[i] = 0
                 if (abPressed) { i = AorB.AB }
+                serial.write(`Double Click: ${i}`)
                 doActions(i, DOUBLECLICK)
             } else {
                 if(inLongClick[i]) {
@@ -91,6 +92,7 @@ loops.everyInterval(singleClickCheckTime, function() {
         if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] > doubleClickTime)) {
             lastClickEnd[i] = 0
             if (abPressed) { i = AorB.AB }
+            serial.write(`Single Click: ${i}`)
             doActions(i, SINGLECLICK)
         }
         
@@ -101,6 +103,7 @@ loops.everyInterval(singleClickCheckTime, function() {
             inLongClick[i] = true
             lastPressedStart[i] = currentTime
             if (abPressed) { i = AorB.AB }
+            serial.write(`Long Click: ${i}`)
             doActions(i, LONGCLICK)
         }
     }
@@ -125,6 +128,7 @@ control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_AB,
 export function onButtonSingleClicked(button: AorB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(SINGLECLICK, body)
+    serial.write(`Single Click, ${body}`)
 }
 
 //% blockId=onButtonDoubleClicked block="on button |%NAME double clicked "
@@ -132,6 +136,7 @@ export function onButtonSingleClicked(button: AorB, body: Action) {
 export function onButtonDoubleClicked(button: AorB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(DOUBLECLICK, body)
+    serial.write(`Double Click, ${body}`)
 }
 
 //% blockId=onButtonHeld block="on button |%NAME held"
@@ -139,6 +144,7 @@ export function onButtonDoubleClicked(button: AorB, body: Action) {
 export function onButtonHeld(button: AorB, body: Action) {
     let buttonHandlers = actions.get(button)
     buttonHandlers.set(LONGCLICK, body)
+    serial.write(`Long Click, ${body}`)
 }
 
 
