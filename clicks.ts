@@ -24,6 +24,7 @@ let inLongClick =      [false, false, false]
 export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
     B = 1,
+    //% block="A+B"
     AB = 2
 }
 
