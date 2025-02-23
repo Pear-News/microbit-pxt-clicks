@@ -59,21 +59,17 @@ function buttonHandler() {
             inLongClick[AorB.AB] = false
         }
     } else {
-        if (pressedA) {
-            if (!pressedState[AorB.A]) {
-                doActions(AorB.A, BUTTONDOWN)
-                lastPressedStart[AorB.A] = currentTime
-                pressedState[AorB.A] = true
-                inLongClick[AorB.A] = false
-            }
+        if (pressedA && !pressedState[AorB.A]) {
+            doActions(AorB.A, BUTTONDOWN)
+            lastPressedStart[AorB.A] = currentTime
+            pressedState[AorB.A] = true
+            inLongClick[AorB.A] = false
         }
-        if (pressedB) {
-            if (!pressedState[AorB.B]) {
-                doActions(AorB.B, BUTTONDOWN)
-                lastPressedStart[AorB.B] = currentTime
-                pressedState[AorB.B] = true
-                inLongClick[AorB.B] = false
-            }
+        if (pressedB && !pressedState[AorB.B]) {
+            doActions(AorB.B, BUTTONDOWN)
+            lastPressedStart[AorB.B] = currentTime
+            pressedState[AorB.B] = true
+            inLongClick[AorB.B] = false
         }
     }
 
