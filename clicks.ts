@@ -53,6 +53,7 @@ function button(i: number) { // i is the Button Index (1,2,3)
         let pressed = input.buttonIsPressed(Button.AB)
         serial.writeLine("AB is pressed (Testing, Basic Part)")
         serial.writeLine("Pressed: " + pressed)
+        i = 3
         serial.writeLine("i: " + i)
     }
     i--;  // Adjust to 0-based AorB and array index.
