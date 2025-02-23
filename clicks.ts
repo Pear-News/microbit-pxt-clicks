@@ -15,7 +15,7 @@ const singleClickCheckTime = 100 // ms
 const longClickTime = 800 
 const shortClickTime =  500 
 const doubleClickTime = 300      
-const abCheckDelay = 20 // ms delay to check for A+B press
+const abCheckDelay = 100 // ms delay to check for A+B press
 
 // Times for buttons
 let lastClickEnd =     [0, 0, 0]
