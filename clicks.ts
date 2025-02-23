@@ -15,7 +15,6 @@ const singleClickCheckTime = 100 // ms
 const longClickTime = 800 
 const shortClickTime =  500 
 const doubleClickTime = 300      
-const abCheckDelay = 100 // ms delay to check for A+B press
 
 // Times for buttons
 let lastClickEnd =     [0, 0, 0]
@@ -49,10 +48,10 @@ function doActions(button: AorB, kind: number) {
 function buttonHandler(i: number) {
     let currentTime = control.millis()
     let pressed = input.buttonIsPressed(i)
-    basic.pause(abCheckDelay)
+    let pressedA = input.buttonIsPressed(Button.A)
+    let pressedB = input.buttonIsPressed(Button.B)
 
-    // Check if both buttons are pressed within the delay
-    if (input.buttonIsPressed(Button.A) && input.buttonIsPressed(Button.B)) {
+    if (pressedA && pressedB) {
         abPressed = true
     } else {
         abPressed = false
