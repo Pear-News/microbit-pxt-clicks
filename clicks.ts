@@ -22,7 +22,9 @@ let lastClickEnd =     [0, 0, 0]
 let lastPressedStart = [0, 0, 0]
 let inLongClick =      [false, false, false]
 let abDetected = false
-let pressHistory = [] // Array to record press history
+
+// Array to record the sequence of button presses
+let pressHistory: {button: AorB, time: number}[] = []
 
 export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
