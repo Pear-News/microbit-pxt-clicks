@@ -15,14 +15,14 @@ const singleClickCheckTime = 100 // ms
 const longClickTime = 800 
 const shortClickTime =  500 
 const doubleClickTime = 300      
+const abPressWindow = 50 // ms window to detect A+B press
 
 // Times for buttons
 let lastClickEnd =     [0, 0, 0]
 let lastPressedStart = [0, 0, 0]
 let inLongClick =      [false, false, false]
-
-// Array to record the sequence of button presses
-let buttonPressSequence: {button: AorB, time: number}[] = []
+let abDetected = false
+let pressHistory = [] // Array to record press history
 
 export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
@@ -53,12 +53,11 @@ function button(i: number) { // i is the Button Index (1,2,3)
     i--;  // Adjust to 0-based AorB and array index.
 
     if(pressed) {
+        pressHistory.push({ button: i, time: currentTime })
         doActions(i, BUTTONDOWN)
         lastPressedStart[i] = currentTime
-        // Haven't started a long click yet
         inLongClick[i] = false
     } else {
-        // Release
         doActions(i, BUTTONUP)
         const holdTime = currentTime - lastPressedStart[i]
         if (holdTime < shortClickTime) {
@@ -66,56 +65,55 @@ function button(i: number) { // i is the Button Index (1,2,3)
                 lastClickEnd[i] = 0 // Click ended
                 doActions(i, DOUBLECLICK)
             } else {
-                // If we're in a long click, end it
                 if(inLongClick[i] == true) {
                     inLongClick[i] = false
                     lastClickEnd[i] = 0
                 } else {
-                    // Otherwise, note the time for short click checks
                     lastClickEnd[i] = currentTime
                 }
             }
         } else {
-            // Intermediate clicks are ignored
             lastClickEnd[i] = 0
+        }
+    }
+
+    // Analyze press history to detect A+B press
+    analyzePressHistory()
+}
+
+function analyzePressHistory() {
+    let currentTime = control.millis()
+    for (let i = 0; i < pressHistory.length; i++) {
+        for (let j = i + 1; j < pressHistory.length; j++) {
+            if (pressHistory[i].button !== pressHistory[j].button && 
+                Math.abs(pressHistory[i].time - pressHistory[j].time) <= abPressWindow) {
+                abDetected = true
+                doActions(AorB.AB, SINGLECLICK)
+                pressHistory = [] // Clear the press history
+                return
+            }
         }
     }
 }
 
 loops.everyInterval(singleClickCheckTime, function() {
     let currentTime = control.millis()
-    // i is index and AorB  (0-based)
     for(let i=Button.A-1;i<=Button.AB-1;i++) {
         if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] > doubleClickTime)) {
             lastClickEnd[i] = 0
             doActions(i, SINGLECLICK)
-            buttonPressSequence.push({button: i, time: currentTime})
-
-            // Analyze the button press sequence
-            if (buttonPressSequence.length >= 2) {
-                let lastPress = buttonPressSequence[buttonPressSequence.length - 1]
-                let secondLastPress = buttonPressSequence[buttonPressSequence.length - 2]
-                
-                if ((lastPress.button == AorB.B && secondLastPress.button == AorB.A) ||
-                    (lastPress.button == AorB.A && secondLastPress.button == AorB.B)) {
-                    if (lastPress.time - secondLastPress.time <= doubleClickTime) {
-                        doActions(AorB.AB, SINGLECLICK)
-                    }
-                }
-            }
         }
-        // Check if we're in a long press
-        // Button indices are 1-based (i+1).
         let pressed = input.buttonIsPressed(i+1)
         const holdTime = currentTime - lastPressedStart[i]
         if(pressed && (holdTime > longClickTime) ) {
-            lastClickEnd[i] = 0 // Click ended / not a short click
+            lastClickEnd[i] = 0
             inLongClick[i] = true
-            lastPressedStart[i] = currentTime // Prepare for 2nd long click
+            lastPressedStart[i] = currentTime
             doActions(i, LONGCLICK)
         }
     }
 })
+
 // Register Handlers
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_A,
     EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => button(Button.A))
