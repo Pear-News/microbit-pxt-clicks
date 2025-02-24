@@ -20,7 +20,9 @@ const doubleClickTime = 300
 let lastClickEnd =     [0, 0, 0]
 let lastPressedStart = [0, 0, 0]
 let inLongClick =      [false, false, false]
-let abPressed = false // Flag to indicate if A+B is pressed
+
+// Array to record the sequence of button presses
+let buttonPressSequence: {button: AorB, time: number}[] = []
 
 export enum AorB { // Thanks Martin Williams / https://support.microbit.org/support/tickets/55867
     A = 0,
@@ -39,50 +41,42 @@ let actions : [[Action]] = [
 // Button is AorB (0-based)
 function doActions(button: AorB, kind: number) {
     let handlers = actions.get(button)
-    serial.writeLine("Handlers: " + handlers)
     if(handlers) {
         let action = handlers.get(kind)
         if(action) action()
     }
 }
 
-function buttonHandler(i: number) {
+function button(i: number) { // i is the Button Index (1,2,3)
     let currentTime = control.millis()
     let pressed = input.buttonIsPressed(i)
-    let pressedA = input.buttonIsPressed(Button.A)
-    let pressedB = input.buttonIsPressed(Button.B)
-
-    if (pressedA && pressedB) {
-        abPressed = true
-    } else {
-        abPressed = false
-    }
-    serial.writeLine("abPressed: " + abPressed)
-    serial.writeLine("i: " + i)
-
     i--;  // Adjust to 0-based AorB and array index.
 
     if(pressed) {
         doActions(i, BUTTONDOWN)
         lastPressedStart[i] = currentTime
+        // Haven't started a long click yet
         inLongClick[i] = false
     } else {
+        // Release
         doActions(i, BUTTONUP)
         const holdTime = currentTime - lastPressedStart[i]
         if (holdTime < shortClickTime) {
             if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] < doubleClickTime)) {
-                lastClickEnd[i] = 0
-                if (abPressed) { i = AorB.AB }
+                lastClickEnd[i] = 0 // Click ended
                 doActions(i, DOUBLECLICK)
             } else {
-                if(inLongClick[i]) {
+                // If we're in a long click, end it
+                if(inLongClick[i] == true) {
                     inLongClick[i] = false
                     lastClickEnd[i] = 0
                 } else {
+                    // Otherwise, note the time for short click checks
                     lastClickEnd[i] = currentTime
                 }
             }
         } else {
+            // Intermediate clicks are ignored
             lastClickEnd[i] = 0
         }
     }
@@ -90,38 +84,51 @@ function buttonHandler(i: number) {
 
 loops.everyInterval(singleClickCheckTime, function() {
     let currentTime = control.millis()
+    // i is index and AorB  (0-based)
     for(let i=Button.A-1;i<=Button.AB-1;i++) {
         if ((lastClickEnd[i] > 0) && (currentTime - lastClickEnd[i] > doubleClickTime)) {
             lastClickEnd[i] = 0
-            if (abPressed) { i = AorB.AB }
             doActions(i, SINGLECLICK)
+            buttonPressSequence.push({button: i, time: currentTime})
+
+            // Analyze the button press sequence
+            if (buttonPressSequence.length >= 2) {
+                let lastPress = buttonPressSequence[buttonPressSequence.length - 1]
+                let secondLastPress = buttonPressSequence[buttonPressSequence.length - 2]
+                
+                if ((lastPress.button == AorB.B && secondLastPress.button == AorB.A) ||
+                    (lastPress.button == AorB.A && secondLastPress.button == AorB.B)) {
+                    if (lastPress.time - secondLastPress.time <= doubleClickTime) {
+                        doActions(AorB.AB, SINGLECLICK)
+                    }
+                }
+            }
         }
-        
+        // Check if we're in a long press
+        // Button indices are 1-based (i+1).
         let pressed = input.buttonIsPressed(i+1)
         const holdTime = currentTime - lastPressedStart[i]
-        if(pressed && (holdTime > longClickTime)) {
-            lastClickEnd[i] = 0
+        if(pressed && (holdTime > longClickTime) ) {
+            lastClickEnd[i] = 0 // Click ended / not a short click
             inLongClick[i] = true
-            lastPressedStart[i] = currentTime
-            if (abPressed) { i = AorB.AB }
+            lastPressedStart[i] = currentTime // Prepare for 2nd long click
             doActions(i, LONGCLICK)
         }
     }
 })
-
 // Register Handlers
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_A,
-    EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => buttonHandler(Button.A))
+    EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => button(Button.A))
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_A,
-    EventBusValue.MICROBIT_BUTTON_EVT_UP, () => buttonHandler(Button.A))
+    EventBusValue.MICROBIT_BUTTON_EVT_UP, () => button(Button.A))
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_B,
-    EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => buttonHandler(Button.B))
+    EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => button(Button.B))
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_B,
-    EventBusValue.MICROBIT_BUTTON_EVT_UP, () => buttonHandler(Button.B))
+    EventBusValue.MICROBIT_BUTTON_EVT_UP, () => button(Button.B))
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_AB,
-    EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => buttonHandler(Button.AB))
+    EventBusValue.MICROBIT_BUTTON_EVT_DOWN, () => button(Button.AB))
 control.onEvent(EventBusSource.MICROBIT_ID_BUTTON_AB,
-    EventBusValue.MICROBIT_BUTTON_EVT_UP, () => buttonHandler(Button.AB))
+    EventBusValue.MICROBIT_BUTTON_EVT_UP, () => button(Button.AB))
 
 //% blockId=onButtonSingleClicked block="on button |%NAME single clicked"
 //% weight=100 
