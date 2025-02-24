@@ -39,7 +39,7 @@ let actions : [[Action]] = [
 // Button is AorB (0-based)
 function doActions(button: AorB, kind: number) {
     let handlers = actions.get(button)
-    serial.write("Handlers: " + handlers)
+    serial.writeLine("Handlers: " + handlers)
     if(handlers) {
         let action = handlers.get(kind)
         if(action) action()
