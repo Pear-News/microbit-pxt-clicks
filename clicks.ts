@@ -91,6 +91,7 @@ function analyzePressHistory() {
                 Math.abs(pressHistory[i].time - pressHistory[j].time) <= abPressWindow) {
                 abDetected = true
                 doActions(AorB.AB, SINGLECLICK)
+                basic.pause(5) // Pause for 5 ms for stoping it to repeat A+B Single Click
                 pressHistory = [] // Clear the press history
                 return
             }
